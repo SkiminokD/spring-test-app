@@ -8,6 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.BDDAssertions.then;
@@ -30,12 +31,13 @@ public class ChallengeServiceTest {
     @BeforeEach
     public void setUp() {
         challengeService = new ChallengeServiceImpl(userRepository, attemptRepository);
-        given(attemptRepository.save(any())).will(returnsFirstArg());
+//        given(attemptRepository.save(any())).will(returnsFirstArg());
     }
 
     @Test
     public void checkCorrectAttemptTest() {
         // given
+        given(attemptRepository.save(any())).will(returnsFirstArg());
         ChallengeAttemptDTO attemptDTO =
                 new ChallengeAttemptDTO(50,60,"john_doe", 3000);
 
@@ -52,6 +54,7 @@ public class ChallengeServiceTest {
     @Test
     public void checkWrongAttemptTest() {
         // given
+        given(attemptRepository.save(any())).will(returnsFirstArg());
         ChallengeAttemptDTO attemptDTO =
                 new ChallengeAttemptDTO(50,60,"john_doe", 5000);
 
@@ -65,6 +68,7 @@ public class ChallengeServiceTest {
     @Test
     public void checkExistingUserTest() {
         // given
+        given(attemptRepository.save(any())).will(returnsFirstArg());
         User existingUser = new User(1L, "john_doe");
         given(userRepository.findByAlias("john_doe")).willReturn(Optional.of(existingUser));
         ChallengeAttemptDTO attemptDTO = new ChallengeAttemptDTO(50, 60, "john_doe", 5000);
@@ -78,5 +82,21 @@ public class ChallengeServiceTest {
         verify(userRepository, never()).save(any());
         verify(attemptRepository).save(resultAttempt);
 
+    }
+
+    @Test
+    public void retrieveStatsTest() {
+        // given
+        User user = new User("john_doe");
+        ChallengeAttempt attempt1 = new ChallengeAttempt(1L, user, 50,60, 3010, false);
+        ChallengeAttempt attempt2 = new ChallengeAttempt(2L, user, 50,60, 3051, false);
+        List<ChallengeAttempt> lastAttempts = List.of(attempt1, attempt2);
+        given(attemptRepository.findTop10ByUserAliasOrderByIdDesc("john_doe")).willReturn(lastAttempts);
+
+        // when
+        List<ChallengeAttempt> resultAttempts = challengeService.getStatsForUser("john_doe");
+
+        //then
+        then(resultAttempts).isEqualTo(lastAttempts);
     }
 }
