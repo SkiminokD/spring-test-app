@@ -2,6 +2,7 @@ package microservices.book.multiplication.challenge;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,6 +27,9 @@ public class ChallengeAttemptController {
 
     @GetMapping
     ResponseEntity<List<ChallengeAttempt>> getStatsForUser(@RequestParam("alias") String alias) {
-        return ResponseEntity.ok(challengeService.getStatsForUser(alias));
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.set("Custom-header",
+                "Custom-value");
+        return ResponseEntity.ok().headers(responseHeaders).body(challengeService.getStatsForUser(alias));
     }
 }
